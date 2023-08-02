@@ -739,14 +739,18 @@ func (m *Marshaler) marshalValue(out *errWriter, prop *proto.Properties, v refle
 
 	// check MarshalJSON() and Bytes() for checking RawContractMessage type in wasmd
 	if m, ok := v.Interface().(checkForRawContractMessage); ok {
-		var jsonData []byte
 		if json.Valid(m.Bytes()) {
-			out.write(string(jsonData))
+			data, err := m.MarshalJSON()
+			if err != nil {
+				return err
+			}
 
+			out.write(string(data))
 			return nil
 		} else {
-			jsonData := fmt.Sprintf(`"%s"`, m.Bytes())
-			out.write(string(jsonData))
+			invalidData := fmt.Sprintf(`"%s"`, m.Bytes())
+			fmt.Printf(">>>>>>>> found invalid data: %s\n", invalidData)
+			out.write(string(invalidData))
 
 			return nil
 		}
